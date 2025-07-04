@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-deploy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+      - name: backend
+        image: 657001761946.dkr.ecr.us-east-1.amazonaws.com/backend-repo:latest
+        ports:
+        - containerPort: 5000
+        env:
+        - name: DB_HOST
+          value: "my-rds-instance.ce9wya4k41zv.us-east-1.rds.amazonaws.com"
+        - name: DB_USER
+          value: "vijay"
+        - name: DB_PASSWORD
+          value: "Password123"
+        - name: DB_NAME
+          value: "appdb"
