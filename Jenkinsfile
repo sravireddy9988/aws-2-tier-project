@@ -215,7 +215,7 @@ pipeline {
             }
         }
 
-        stage('Build, Tag & Push Frontend Docker Image') {
+        stage('Build, Tag & Push Frontend Docker Image to AWS ECR') {
             steps {
                 dir('frontend') {
                     sh """
@@ -241,7 +241,7 @@ pipeline {
             }
         }
 
-        stage('Build, Tag & Push Backend Docker Image') {
+        stage('Build, Tag & Push Backend Docker Image to AWS ECR') {
             steps {
                 dir('backend') {
                     sh """
@@ -273,7 +273,7 @@ pipeline {
             }
         }
 
-        stage('Checkout K8s YAML Repo') {
+        stage('Clone Helm Chart for CD') {
             steps {
                 git branch: 'main',
                     credentialsId: 'github-cred',
