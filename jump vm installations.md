@@ -172,3 +172,40 @@ spec:
 kubectl get ingress
 kubectl describe ingressmyapp-ingress
 ```
+
+
+
+# Install Certbot
+
+
+- vim ingress.yaml
+  
+```
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: myapp-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  ingressClassName: nginx  # Must match your IngressClass name
+  tls:
+    - hosts:
+        - www.vijaygiduthuri.in
+      secretName: vijaygiduthuri-tls  # Secret where cert-manager will store the TLS cert
+  rules:
+    - host: www.vijaygiduthuri.in
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: frontend-service  # Replace with your actual service
+                port:
+                  number: 3000
+```
+
+
