@@ -87,6 +87,28 @@ unzip awscliv2.zip
 sudo ./aws/install
 ```
 
+**- Install Docker & Run Sonarqube container:**
+
+  - Install Docker:
+```
+apt install docker.io -y
+systemctl start docker
+systemctl enable docker
+systemctl status docker
+```
+
+  - Run Sonarqube Docker Container:
+
+```
+docker run -d --name sonar -p 9000:9000 sonarqube:lts-community
+
+# List all the Docker Images
+docker images
+
+# List all the Running Docker Containers
+docker ps
+```
+
 **1. Create AWS Infra using Terraform: VPC, EC2, EKS, RDS**
 
 **2. Connect to EC2 ( jump-server ) & Install kubectl, helm, awscli  -> after provide aws creds on ec2 using "aws configure"**
