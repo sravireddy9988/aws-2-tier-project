@@ -59,6 +59,14 @@ echo "✅ Done!"
 
   - Connect to Jenkins usig <EC2_Public_IP:8080>
 
+  - Install Below Plugins on Jenkins
+
+      - docker
+      - terraform
+      - owasp
+      - sonarqube scanner
+      - aws credentials
+
 **- Install Docker, Trivy, awscli**
 
 ```
