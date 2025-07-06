@@ -101,3 +101,74 @@ Enter password: <your-RDS-password>
 aws eks --region us-east-1 update-kubeconfig --name my-eks-cluster
 ```
 
+
+
+
+# Install Argocd:
+
+
+
+# Install Nginx Ingress Controller:
+
+1. Add the Helm repository for NGINX Ingress Controller:
+
+```
+helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+helm repo update
+helm repo ls
+```
+
+2. Install the NGINX Ingress Controller using Helm:
+
+```
+kubectl create namespace ingress-nginx
+
+helm install ingress-nginx ingress-nginx/ingress-nginx \
+  --namespace ingress-nginx \
+  --set controller.publishService.enabled=true
+```
+
+  - `controller.publishService.enabled=true` allows it to work properly with AWS LoadBalancer.
+
+
+3. Verify the installation:
+
+```
+helm ls -A
+
+helm status ingress-nginx -n  ingress-nginx
+
+kubectl get all -n ingress-nginx
+```
+
+
+4. vim ingress.yaml
+
+```
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: myapp-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  ingressClassName: nginx  # Set to the name of your IngressClass (e.g., "nginx")
+  rules:
+  - host: www.vijaygiduthuri.in  # Provide Load Balancer DNS Name
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: frontend-service  # Your service name
+            port:
+              number: 3000
+```
+
+  - verify Ingress:
+
+```
+kubectl get ingress
+kubectl describe ingressmyapp-ingress
+```
