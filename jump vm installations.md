@@ -57,6 +57,47 @@ fi
 
 ```
 
-  - aws --version
-  - kubectl version --client
-  - helm version
+**- Install the `MySQL client`**
+
+```
+sudo apt install -y mysql-client
+```
+
+**- provide aws credentails using `aws configure` on `ec2`**
+
+```
+aws configure
+
+access key:
+secret key:
+region: us-east-1
+```
+
+   - aws --version
+   - kubectl version --client
+   - helm version
+
+  - Connect to your RDS MySQL database
+
+     - Replace <RDS-endpoint>, vijay, and use your actual password when prompted:
+   
+```
+mysql -h <RDS-endpoint> -u vijay -p
+```
+
+ - When prompted:
+
+```
+Enter password: <your-RDS-password>
+```
+
+- If all the set up is correct (RDS is in same VPC and security group allows access), you’ll be in the MySQL prompt.
+     
+
+
+**- Connect to AWS EKS Cluster:**
+
+```
+aws eks --region us-east-1 update-kubeconfig --name my-eks-cluster
+```
+
