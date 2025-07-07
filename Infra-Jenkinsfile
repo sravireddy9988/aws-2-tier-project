@@ -1,0 +1,65 @@
+pipeline {
+    agent any
+
+    parameters {
+        choice(
+            name: 'ACTION',
+            choices: ['apply', 'destroy'],
+            description: 'Choose action: apply to create resources, destroy to delete them'
+        )
+    }
+
+    stages {
+        stage('Git Checkout') {
+            steps {
+                git branch: 'main',
+                    credentialsId: 'github-cred',
+                    url: 'https://github.com/vijaygiduthuri/aws-2-tier-project.git'
+            }
+        }
+
+        stage('Provisioning AWS Infra using Terraform') {
+            when {
+                expression { params.ACTION == 'apply' }
+            }
+            steps {
+                withCredentials([
+                    [$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-credentials-id']
+                ]) {
+                    dir('aws-terraform-new') {
+                        sh '''
+                            export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
+                            export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
+                            export AWS_DEFAULT_REGION=ap-south-1
+
+                            terraform init
+                            terraform plan
+                            terraform apply --auto-approve
+                        '''
+                    }
+                }
+            }
+        }
+
+        stage('Destroy AWS Infra using Terraform') {
+            when {
+                expression { params.ACTION == 'destroy' }
+            }
+            steps {
+                withCredentials([
+                    [$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-credentials-id']
+                ]) {
+                    dir('aws-terraform-new') {
+                        sh '''
+                            export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
+                            export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
+                            export AWS_DEFAULT_REGION=ap-south-1
+
+                            terraform destroy --auto-approve
+                        '''
+                    }
+                }
+            }
+        }
+    }
+}
