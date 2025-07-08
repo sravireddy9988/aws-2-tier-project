@@ -106,6 +106,71 @@ aws eks --region us-east-1 update-kubeconfig --name my-eks-cluster
 
 # Install Argocd:
 
+  - Install Argocd on EKS Cluster:
+
+```
+kubectl create namespace argocd
+kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+```
+
+  - Verify Argocd Pods, Deployments, Services, Secrets etc…
+
+```
+kubectl get all -n argocd
+kubectl get secrets -n argocd
+```
+
+**- Expose ArgoCD Server:**
+
+  - By default, the ArgoCD API server is not exposed externally. You can expose it using `NodePort` (or) `LoadBalancer` service type:
+
+```
+kubectl get svc -n argocd
+
+kubectl edit svc argocd-server -n argocd  
+```
+
+**- Access Argocd UI using `NodePort` (or) `LoadBalancer`**  -> http://<Public_IP:NodePort>
+
+
+  - Log In to ArgoCD:
+
+  - 1. Get the `ArgoCD admin password`: The initial password is stored in a `Kubernetes secret`.
+
+```
+kubectl get secrets -n argocd
+kubectl edit secret argocd-initial-admin-secret -n argocd
+
+echo WWxnVHRyVVF4T0Y5WmlncA== | base64 --decode
+```
+
+**Log in to the Argocd UI:**
+
+- Username: `admin`
+
+- Password: (`use the password retrieved from the previous command`)
+
+**Deploy Your Helm Chart on EKS using Argocd:**
+
+Step 1: Generate a `GitHub Personal Access Token (PAT)`
+
+1. Go to GitHub `Settings` -> Navigate to `Developer Settings` → `Personal Access Tokens` → `Generate new token`
+
+2. Select required scopes:
+
+   - `repo` (to access private repositories)
+  
+3. Copy and save the token securely.
+
+
+**Step 2: Add `Private GitHub Repo` to `ArgoCD`:**
+
+  - Argocd ->  Go to `Settings` → `Repositories` → Connect Repo Using `HTTPS`.
+
+  - Next `Create Application` on Argocd
+
+
+
 
 
 # Install Nginx Ingress Controller:
@@ -152,16 +217,16 @@ metadata:
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /
 spec:
-  ingressClassName: nginx  # Set to the name of your IngressClass (e.g., "nginx")
+  ingressClassName: nginx  
   rules:
-  - host: www.vijaygiduthuri.in  # Provide Load Balancer DNS Name
+  - host: www.vijaygiduthuri.in  
     http:
       paths:
       - path: /
         pathType: Prefix
         backend:
           service:
-            name: frontend-service  # Your service name
+            name: frontend-service  
             port:
               number: 3000
 ```
@@ -175,7 +240,69 @@ kubectl describe ingressmyapp-ingress
 
 
 
-# Install Certbot
+# Install Cert-manager:
+
+1. Add the Jetstack Helm repository:
+   
+```
+helm repo add jetstack https://charts.jetstack.io
+helm repo update
+helm repo ls
+```
+
+2. Install cert-manager:
+
+   - Apply the Cert-Manager CRDs:
+
+```
+kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/v1.11.0/cert-manager.crds.yaml
+```
+
+   - Install Cert-Manager using Helm:
+
+```
+helm install cert-manager jetstack/cert-manager --namespace cert-manager --create-namespace --version v1.11.0
+```
+
+   - Verify that cert-manager is running:
+
+```
+kubectl get pods -n cert-manager
+```
+
+   - All `pods` in the `cert-manager namespace` should be in the `Running state`.
+
+
+**vim `cluster-issuer.yaml`**
+
+```
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-prod
+spec:
+  acme:
+    server: https://acme-v02.api.letsencrypt.org/directory
+    email: vijay@gmail.com  # Replace with your email
+    privateKeySecretRef:
+      name: letsencrypt-prod
+    solvers:
+    - http01:
+        ingress:
+          class: nginx
+```
+
+  - Apply the ClusterIssuer:
+
+```
+kubectl apply -f cluster-issuer.yaml
+```
+
+**3. Update the Ingress Resource for `HTTPS`:**
+
+
+  - Now, let's modify your Ingress resource to use cert-manager to automatically obtain a TLS certificate for www.vijaygiduthuri.in.
+
 
 
 - vim ingress.yaml
@@ -203,9 +330,30 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: frontend-service  # Replace with your actual service
+                name: frontend-service  
                 port:
                   number: 3000
 ```
+
+  - Apply the Updated Ingress Resource:
+
+```
+kubectl apply -f ingress.yaml
+kubectl get ingress
+kubectl describe ingress hello-ingress
+```
+
+  - Cert-manager will now request a certificate from Let's Encrypt. You can check the status of the certificate by running:
+
+```
+kubectl get certificate
+kubectl describe certificate vijaygiduthuri-tls
+```
+
+**Verify HTTPS Access:**
+
+- Once the certificate is issued and configured, access your site using https://vijaygiduthuri.in.
+
+- This will automatically redirect HTTP traffic to HTTPS, ensuring all connections are secure.
 
 
