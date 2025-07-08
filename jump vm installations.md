@@ -352,8 +352,8 @@ kubectl describe certificate vijaygiduthuri-tls
 
 **Verify HTTPS Access:**
 
-- Once the certificate is issued and configured, access your site using https://vijaygiduthuri.in.
+- Once the certificate is issued and configured, access your site using `https://www.vijaygiduthuri.in`
 
-- This will automatically redirect HTTP traffic to HTTPS, ensuring all connections are secure.
+- This will automatically redirect `HTTP` traffic to `HTTPS`, ensuring all connections are secure.
 
 
