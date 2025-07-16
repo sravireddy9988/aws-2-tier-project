@@ -1,131 +1,78 @@
 
-
+### Project Architecture:
 
 ![Railway-Ticket-Booking-Application-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/af783756-252a-4ad4-9f03-d44731db7927)
 
 
+**Deploying Railway Ticket Booking Application on AWS EKS using modern DevOps tools and best practices. This Project Showcases the deployment of frontend and backend microservices on AWS (Elastic Kubernetes Service). fully automated using Jenkins pipelines, Helm, Argocd and Terraform.**
+
+
+### Project Overview:
+
+we've build a **Two-Tier web application** where:
+
+- User input details (Name, Source, Destination, Food Preference) via the **frontend**.
+
+- Data is securely sent to the **backend** and stored in an **AWS RDS MySQL database**.
+
+### Architecture Highlights:
+
+- **2 GitHub Repositories:**
+
+    - 1. Contains **frontend & backend app code + Terraform** scripts for AWS infrastructure.
+ 
+    - 2. Contains **Helm Charts** for the EKS deployments. 
 
 
 
+- Fully automated CI/CD using **Jenkins pipelines**.
+
+- Infrastructure-as-code with **Terraform**
+
+- Continuous delivery with **Argocd**
+
+- Domain setup via **GoDaddy** and secure HTTPS access with **TLS certificates**.
 
 
+### Jenkins Pipeline Overview:
+
+**Pipeline 1 -> Application CI/CD:**
+
+- Pulls app source code from GitHub.
+
+- Performs static code analysis using **SonarQube**.
+
+- Scans dependencies with **OWASP Dependency-Check**.
+
+- Builds Docker Image for **frontend & backend** and pushes them to **AWS ECR**
+
+- Runs **Trivy** scans on Docker images for vulnerabilities.
+
+- Clones Helm Chart repo and updated image tags dynamically.
 
 
+**Pipeline 2 -> Infrastructure Provisioning:**
 
-**- Install Jenkins**
+- provisions full AWS infrastructure using **Terraform:** "VPC, Subnets, Route Tables, IGW's, EC2 (Ubuntu Jumpbox), RDS(MySQL), and EKS Cluster."
 
-```
-#!/bin/bash
+- Install **Argocd** on **EKS** and integrates **Helm Chart Repo.**
 
-# Exit on any error
-set -e
+- Install **Nginx Ingress Controller** and maps the Load Balancer DNS to a **Godaddy Domain**.
 
-echo "🔄 Updating package list..."
-sudo apt update && sudo apt upgrade -y
+- Secures the domain with **TLS/HTTPS** using **cert-manager**.
 
-echo "☕ Installing Java (OpenJDK 17)..."
-sudo apt install openjdk-17-jdk -y
 
-echo "✅ Java version:"
-java -version
+### Final Output:
 
-echo "🔑 Adding Jenkins repository key..."
-curl -fsSL https://pkg.jenkins.io/debian/jenkins.io-2023.key | sudo tee \
-  /usr/share/keyrings/jenkins-keyring.asc > /dev/null
+- A fully deployed Railway Ticket Booking app accessible via a custom domain over HTTPS, running on scalable kubernetes infrastruture on AWS!
 
-echo "📦 Adding Jenkins repository..."
-echo "deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] \
-  https://pkg.jenkins.io/debian binary/" | sudo tee \
-  /etc/apt/sources.list.d/jenkins.list > /dev/null
 
-echo "🔄 Updating package list..."
-sudo apt update
+<img width="1919" height="828" alt="Screenshot 2025-07-16 162354" src="https://github.com/user-attachments/assets/15005bfb-738a-4e5b-baad-0302987477d0" />
 
-echo "🛠 Installing Jenkins..."
-sudo apt install jenkins -y
 
-echo "🚀 Starting Jenkins service..."
-sudo systemctl start jenkins
-sudo systemctl enable jenkins
+![image](https://github.com/user-attachments/assets/d532c636-c88b-412b-b069-3c678bb6e0f7)
 
-echo "✅ Checking Jenkins status..."
-sudo systemctl status jenkins --no-pager
-
-echo "🌐 Configuring firewall (Allow port 8080)..."
-sudo ufw allow 8080/tcp
-sudo ufw enable -y
-sudo ufw status
-
-echo "🔑 Retrieving Jenkins admin password..."
-JENKINS_PASSWORD=$(sudo cat /var/lib/jenkins/secrets/initialAdminPassword)
-
-echo "🎉 Jenkins installed successfully!"
-echo "🔗 Access Jenkins at: http://$(curl -s ifconfig.me):8080"
-echo "🛠 Initial Admin Password: $JENKINS_PASSWORD"
-echo "💡 Save this password to log in for the first time."
-
-echo "✅ Done!"
-```
-
-  - Connect to Jenkins usig <EC2_Public_IP:8080>
-
-  - Install Below Plugins on Jenkins
-
-      - docker
-      - terraform
-      - owasp
-      - sonarqube scanner
-      - aws credentials
-
-**- Install Docker, Trivy, awscli**
-
-```
-# Install Trivy
-sudo apt-get install wget apt-transport-https gnupg lsb-release
-wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | sudo apt-key add -
-echo deb https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main | sudo tee -a /etc/apt/sources.list.d/trivy.list
-sudo apt-get update
-sudo apt-get install trivy
-
-# Check trivy version
-trivy --version
-
-# Install Terraform
-wget -O - https://apt.releases.hashicorp.com/gpg | sudo gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
-echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/hashicorp.list
-sudo apt update && sudo apt install terraform
-
-#Verify terraform version:
-terraform --version
-
-# Install AWSCLI
-sudo apt install unzip -y
-curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-unzip awscliv2.zip
-sudo ./aws/install
-```
-
-**- Install Docker & Run Sonarqube container:**
-
-  - Install Docker:
-```
-apt install docker.io -y
-systemctl start docker
-systemctl enable docker
-systemctl status docker
-```
-
-  - Run Sonarqube Docker Container:
-
-```
-docker run -d --name sonar -p 9000:9000 sonarqube:lts-community
-
-# List all the Docker Images
-docker images
-
-# List all the Running Docker Containers
-docker ps
-```
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 **1. Create AWS Infra using Terraform: VPC, EC2, EKS, RDS**
 
@@ -166,8 +113,8 @@ kubectl get all
 
 **6. access "frontend ui" using "LoadBalancer" DNS Name & provide inputs like "Name, Travelling from, Destination, Food Preference" & check all the data on "backend"**
 
+<img width="1919" height="828" alt="Screenshot 2025-07-16 162354" src="https://github.com/user-attachments/assets/15005bfb-738a-4e5b-baad-0302987477d0" />
 
-![image](https://github.com/user-attachments/assets/e46b3672-b46c-468f-be3f-0f65bf223c63)
 
 
   - connect to ec2 ( jump server ) & Install MySQL and check your data:
