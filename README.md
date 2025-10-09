@@ -1,5 +1,5 @@
 
-### Project Architecture:
+### Project Architecture: 
 
 ![Railway-Ticket-Booking-Application-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/af783756-252a-4ad4-9f03-d44731db7927)
 
